@@ -11,7 +11,15 @@ from werkzeug.exceptions import NotFound
 @app.route("/home",methods=["GET"])
 def home():
     with app.app_context():
-        db.create_all()
+        hashed_password = generate_password_hash("mohammadzinc", method="pbkdf2:sha256")
+        new_user = User(
+        first_name="Mohammad",
+        last_name="Mhaidat",
+        email="mohammadzinc@ju.edu.jo",
+        password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
     return render_template("home.html",title="Home Page")
 
 @app.route('/login',methods=["GET","POST"])
