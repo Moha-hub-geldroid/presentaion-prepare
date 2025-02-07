@@ -10,6 +10,15 @@ from werkzeug.exceptions import NotFound
 @app.route("/")
 @app.route("/home",methods=["GET"])
 def home():
+    db.create_all()
+    new_user = User(
+    first_name="Mohammad",
+    last_name="Mhaidat",
+    email="mohammad@ju.edu.jo",
+    password=hashed_password)
+    hashed_password = generate_password_hash("mohammad", method="pbkdf2:sha256")
+    db.session.add(new_user)
+    db.session.commit()
     return render_template("home.html",title="Home Page")
 
 @app.route('/login',methods=["GET","POST"])
@@ -44,58 +53,3 @@ def logout():
 def profile():
     name = current_user.first_name
     return render_template('profile.html',title=f'{name} Dashboard')
-
-@app.route('/superadmin/add_course',methods=["GET","POST"])
-@login_required
-def add_course():
-    user = current_user
-    form = AddCourseForm()
-    if user.account_type != 'admin':
-        abort(404)
-    if form.validate_on_submit():
-        try:
-            course_name = form.name.data
-            doc_name = form.author_id.data.split()
-            doctor = User.query.filter_by(first_name=doc_name[0],last_name=doc_name[1]).first_or_404()
-            new_course = Course(course_name=course_name,doctor_id=doctor.id)
-            db.session.add(new_course)
-            db.session.commit()
-            flash(f'{course_name} Course was added successfully to dr.{doctor.first_name} {doctor.last_name} courses list.','success')
-        except NotFound:
-            flash('No doctors assigned with this name.','danger')
-    return render_template('add_course.html',title='Admin Panel',form=form)
-
-@app.route('/superadmin/manage_courses', methods=["GET", "POST"])
-@login_required
-def manage_courses():
-    user = current_user
-    form = ManageCoursesForm()
-    if user.account_type != 'admin':
-        abort(404)
-    courses = db.session.query(Course, User).join(User, Course.doctor_id == User.id).all()
-    if form.validate_on_submit():
-        course_name = form.name.data
-        doctor_name = form.author_id.data.split()
-        print(course_name,doctor_name)
-        doctor_id = User.query.filter_by(first_name=doctor_name[0],last_name=doctor_name[1]).first()
-        course = Course.query.filter_by(course_name=course_name,doctor_id=doctor_id.id).first()
-        db.session.delete(course)
-        db.session.commit()
-    else:
-        print('hehe')
-    return render_template('admin_manage_courses.html', title='Admin Panel', form=form, courses=courses)
-
-@app.route('/doctor/courses', methods=["GET", "POST"])
-@login_required
-def doctor_courses():
-    user = current_user
-    form = DoctorCoursesForm()
-    if user.account_type != 'doctor':
-        abort(404)
-    courses = user.courses
-    courses_data = []
-    for course in courses:
-        enrolled_students = [student.id for student in course.enrolled_students]
-        course_info = f"{course.id};{course.course_name};{','.join(map(str, enrolled_students))}"
-        courses_data.append(course_info)
-    return render_template('doctor_courses.html', title='My Courses', form=form, courses=courses_data)
