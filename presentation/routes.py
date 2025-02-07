@@ -10,6 +10,8 @@ from werkzeug.exceptions import NotFound
 @app.route("/")
 @app.route("/home",methods=["GET"])
 def home():
+    with app.app_context():
+        db.create_all()
     return render_template("home.html",title="Home Page")
 
 @app.route('/login',methods=["GET","POST"])
