@@ -12,6 +12,7 @@ from werkzeug.exceptions import NotFound
 def home():
     hashed_password = generate_password_hash("mohammadzinc", method="pbkdf2:sha256")
     with app.app_context():
+        db.create_all()
         new_user = User(
         first_name="Mohammad",
         last_name="Mhaidat",
