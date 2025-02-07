@@ -1,0 +1,15 @@
+{% extends "layout2.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{url_for('static',filename='profile.css')}}">
+<div class="container container1">
+    <div class="card">
+        <div class="container-fluid container2">
+            <img src="{{ url_for('static', filename='pfp.png') }}" alt="Profile Picture" style="margin-bottom: 8px !important;" class="rounded-circle" width="90" height="90">
+        </div>
+        <font class="text-center fw-semibold" id="font">Hi, {{current_user.first_name}} {{current_user.last_name}}</font>
+        <label for="email" id="label" class="fw-semibold">Email</label>
+        <input type="text" id="email" value="{{current_user.email}}" readonly disabled>
+        <center><button class="btn see-attendance-button fw-semibold">Continue hacking</button></center>
+    </div>
+</div>
+{% endblock %}
